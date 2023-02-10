@@ -1,0 +1,16 @@
+name: woodpecker_test
+on:
+  pull_request_review:
+    branches:
+      - develop
+    types: [submitted]
+jobs:
+  lead-time:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: comment pr metrics
+        uses: ./ # Uses an action in the root directory
