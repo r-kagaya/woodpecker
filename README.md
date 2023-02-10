@@ -21,5 +21,5 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: comment pr metrics
-        uses: actions/woodpecker
+        uses: r-kagaya/woodpecker
 ```
