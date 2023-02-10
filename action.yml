@@ -1,4 +1,4 @@
-name: 'woodpecker'
+name: 'r-kagaya/woodpecker'
 description: 'Provides visualization of various PR-related metrics'
 runs:
   using: 'composite'
