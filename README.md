@@ -1,6 +1,7 @@
 # Woodpecker
-This action provides visualization of various metrics about the pull request
-Currently, only pull_request_review triggers are supported, and they are only triggered when approved.
+This action provides visualization of various metrics about the pull request.
+
+Currently, only *pull_request_review* triggers are supported, and they are only triggered when approved.
 
 ## Example usage
 
@@ -12,7 +13,7 @@ on:
       - develop
     types: [submitted]
 jobs:
-  lead-time:
+  woodpecker:
     runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
