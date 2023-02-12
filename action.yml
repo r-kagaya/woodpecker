@@ -51,6 +51,9 @@ runs:
               ... on PullRequest {
                 reviews(first: 1) {
                   nodes {
+                    author {
+                      login
+                    }
                     createdAt
                   }
                 }
@@ -69,6 +72,7 @@ runs:
           xargs -n 2 |
           awk '{printf "%d", ($1 - $2) / 60 }'|
           xargs -I{} echo LEAD_TIME_OF_START_REVIEW_MIN={} >> $GITHUB_ENV  
+        echo "FIRST_REVIEWER=$(echo $pr_data | jq -r '.data.node | .reviews.nodes[0].author.login')" >> $GITHUB_ENV
 
     - name: comment
       if: github.event.review.state == 'approved'
