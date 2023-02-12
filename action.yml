@@ -3,7 +3,7 @@ description: 'Provides visualization of various PR-related metrics'
 runs:
   using: 'composite'
   steps:
-    - name: calc pr review
+    - name: calc pr metrics
       if: github.event.review.state == 'approved'
       shell: bash
       run: |
@@ -40,6 +40,40 @@ runs:
         echo "REVIEWER=$(echo $pr_data | jq -r '.data.node | .reviews.nodes[0].author.login')" >> $GITHUB_ENV
         echo "CHANGE_LINES=$(echo $pr_data | jq -r '.data.node | .additions, .deletions' | xargs -n 2 | awk '{printf "%d", ($1 + $2)}')" >> $GITHUB_ENV
         echo "PP_DISCUSSIONS=$(echo $pr_data | jq -r '.data.node | .totalCommentsCount')" >> $GITHUB_ENV
+
+    - name: calc time to start of review
+      if: github.event.review.state == 'approved'
+      shell: bash
+      run: |
+        pr_data=$(gh api graphql -f id="${{ github.event.pull_request.node_id }}" -f query='
+          query ($id: ID!) {
+            node(id: $id) {
+              ... on PullRequest {
+                reviews(first: 1) {
+                  nodes {
+                    author {
+                      login
+                    }
+                    createdAt
+                  }
+                }
+                commits(first: 1) {
+                  nodes {
+                    commit {
+                      authoredDate
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ')        
+        echo $pr_data | jq -r '.data.node | .reviews.nodes[0].createdAt, .commits.nodes[0].commit.authoredDate | fromdate | strftime("%s")' |
+          xargs -n 2 |
+          awk '{printf "%d", ($1 - $2) / 60 }'|
+          xargs -I{} echo LEAD_TIME_OF_START_REVIEW_MIN={} >> $GITHUB_ENV  
+        echo "FIRST_REVIEWER=$(echo $pr_data | jq -r '.data.node | .reviews.nodes[0].author.login')" >> $GITHUB_ENV
+
     - name: comment
       if: github.event.review.state == 'approved'
       shell: bash
@@ -50,6 +84,7 @@ runs:
           | Description | Value |
           | --- | --- |
           | Time to approved the review of this PR | $(echo "scale=1; ${LEAD_TIME_OF_REVIEW_MIN} / 60" | bc | xargs printf %.1f) hour / ${LEAD_TIME_OF_REVIEW_MIN} min |
+          | Time to start the review of this PR | $(echo "scale=1; ${LEAD_TIME_OF_START_REVIEW_MIN} / 60" | bc | xargs printf %.1f) hour / ${LEAD_TIME_OF_START_REVIEW_MIN} min |
           | Total Changed Lines | ${CHANGE_LINES} |
           | Pull Requests Discussions | ${PP_DISCUSSIONS} |
         "
