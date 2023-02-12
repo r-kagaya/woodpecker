@@ -40,10 +40,6 @@ runs:
         echo "REVIEWER=$(echo $pr_data | jq -r '.data.node | .reviews.nodes[0].author.login')" >> $GITHUB_ENV
         echo "CHANGE_LINES=$(echo $pr_data | jq -r '.data.node | .additions, .deletions' | xargs -n 2 | awk '{printf "%d", ($1 + $2)}')" >> $GITHUB_ENV
         echo "PP_DISCUSSIONS=$(echo $pr_data | jq -r '.data.node | .totalCommentsCount')" >> $GITHUB_ENV
-        echo $pr_data | jq -r '.data.node | .reviews.nodes[1].createdAt, .commits.nodes[0].commit.authoredDate | fromdate | strftime("%s")' |
-          xargs -n 2 |
-          awk '{printf "%d", ($1 - $2) / 60 }'|
-          xargs -I{} echo LEAD_TIME_OF_START_REVIEW_MIN={} >> $GITHUB_ENV  
 
     - name: calc time to start of review
       if: github.event.review.state == 'approved'
