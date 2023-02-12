@@ -22,11 +22,6 @@ runs:
                     createdAt
                   }
                 }
-                reviews(first: 1) {
-                  nodes {
-                    createdAt
-                  }
-                }
                 commits(first: 1) {
                   nodes {
                     commit {
